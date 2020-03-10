@@ -139,6 +139,12 @@ import static com.airbnb.lottie.RenderMode.HARDWARE;
     init(attrs, defStyleAttr);
   }
 
+  public void setFileName(String fileName) {
+    if (fileName != null) {
+      setAnimation(fileName);
+    }
+  }
+
   private void init(@Nullable AttributeSet attrs, @AttrRes int defStyleAttr) {
     TypedArray ta = getContext().obtainStyledAttributes(attrs, R.styleable.LottieAnimationView, defStyleAttr, 0);
     cacheComposition = ta.getBoolean(R.styleable.LottieAnimationView_lottie_cacheComposition, true);
