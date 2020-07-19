@@ -1,3 +1,24 @@
+# 3.4.1
+#### Feature and Improvements
+* Added a KeyPath.COMPOSITION constant to set dynamic properties on the animation's root composition layer ([#1559](https://github.com/airbnb/lottie-android/pull/1559)).
+* A default style can now be set for all AnimationViews with lottieAnimationViewStyle ([#1524](https://github.com/airbnb/lottie-android/pull/1524)).
+
+# 3.4.0
+### Features and Improvements
+* Added optional cache key parameters to url loading to enable skipping the cache.
+* Added the ability to clear the Lottie cache via `LottieCompositionFactory.clearCache()`.
+
+### Bugs Fixed
+* Properly pass in progress to ValueCallbacks.
+* Clear existing ValueCallbacks if new ones overwrite old ones.
+* Clip interpolators that might loop back on themself to render something very close rather than crashing.
+* Fix time stretch  + time remap when there is a start offset.
+* Ensure that the first frame is rendered when a new composition is set even if it is not yet playing.
+* Properly render Telegram stickers that use [0,1] for color but [0,255] for alpha.
+* Ensure that LottieDrawable has the correct bounds when the composition updates before Marshmallow.
+* Fully clear off screen buffers pre-pie to prevent artifacts.
+* Play, not resume animations if they are played while not shown.
+
 # 3.3.1
 ### Bugs Fixed
 * Clear alpha values when applying a mask or matte
@@ -28,11 +49,11 @@
 
 # 3.1.0
 ### Features and Improvements
-* **Breaking Change** Replace JsonReader parsing APIs with InputStream variants to prevent 
+* **Breaking Change** Replace JsonReader parsing APIs with InputStream variants to prevent
 exposing Lottie's copy of Moshi's json parser.
-* Add the ability to catch all Lottie composition errors with `setFailureListener` and 
+* Add the ability to catch all Lottie composition errors with `setFailureListener` and
 `resetFailureListener` (#1321).
-* Add the ability to set a fallback drawable res when Lottie fails to parse a composition or 
+* Add the ability to set a fallback drawable res when Lottie fails to parse a composition or
 load it from the internet. Use `setFallbackResource` from code or`lottie_fallbackRes` from xml.
 * Add the ability to render opacity on the layer level rather than the shape level. View the docs
  for `setApplyingOpacityToLayersEnabled` for more info.

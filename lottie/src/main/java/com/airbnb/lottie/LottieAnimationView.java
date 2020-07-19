@@ -16,6 +16,7 @@ import android.util.AttributeSet;
 import android.util.Log;
 import android.view.View;
 
+import androidx.annotation.AttrRes;
 import androidx.annotation.DrawableRes;
 import androidx.annotation.FloatRange;
 import androidx.annotation.MainThread;
@@ -98,8 +99,11 @@ import static com.airbnb.lottie.RenderMode.HARDWARE;
   private boolean isInitialized;
   private String animationName;
   private @RawRes int animationResId;
+
+  private boolean playAnimationWhenShown = false;
   private boolean wasAnimatingWhenNotShown = false;
   private boolean wasAnimatingWhenDetached = false;
+
   private boolean autoPlay = false;
   private boolean cacheComposition = true;
   private RenderMode renderMode = RenderMode.AUTOMATIC;
@@ -119,21 +123,21 @@ import static com.airbnb.lottie.RenderMode.HARDWARE;
 
   public LottieAnimationView(Context context) {
     super(context);
-    init(null);
+    init(null, R.attr.lottieAnimationViewStyle);
   }
 
   public LottieAnimationView(Context context, AttributeSet attrs) {
     super(context, attrs);
-    init(attrs);
+    init(attrs, R.attr.lottieAnimationViewStyle);
   }
 
   public LottieAnimationView(Context context, AttributeSet attrs, int defStyleAttr) {
     super(context, attrs, defStyleAttr);
-    init(attrs);
+    init(attrs, defStyleAttr);
   }
 
-  private void init(@Nullable AttributeSet attrs) {
-    TypedArray ta = getContext().obtainStyledAttributes(attrs, R.styleable.LottieAnimationView);
+  private void init(@Nullable AttributeSet attrs, @AttrRes int defStyleAttr) {
+    TypedArray ta = getContext().obtainStyledAttributes(attrs, R.styleable.LottieAnimationView, defStyleAttr, 0);
     if (!isInEditMode()) {
       cacheComposition = ta.getBoolean(R.styleable.LottieAnimationView_lottie_cacheComposition, true);
       boolean hasRawRes = ta.hasValue(R.styleable.LottieAnimationView_lottie_rawRes);
@@ -299,8 +303,11 @@ import static com.airbnb.lottie.RenderMode.HARDWARE;
     if (isShown()) {
       if (wasAnimatingWhenNotShown) {
         resumeAnimation();
-        wasAnimatingWhenNotShown = false;
+      } else if (playAnimationWhenShown) {
+        playAnimation();
       }
+      wasAnimatingWhenNotShown = false;
+      playAnimationWhenShown = false;
     } else {
       if (isAnimating()) {
         pauseAnimation();
@@ -425,6 +432,19 @@ import static com.airbnb.lottie.RenderMode.HARDWARE;
   }
 
   /**
+   * Load a lottie animation from a url. The url can be a json file or a zip file. Use a zip file if you have images. Simply zip them together and lottie
+   * will unzip and link the images automatically.
+   *
+   * Under the hood, Lottie uses Java HttpURLConnection because it doesn't require any transitive networking dependencies. It will download the file
+   * to the application cache under a temporary name. If the file successfully parses to a composition, it will rename the temporary file to one that
+   * can be accessed immediately for subsequent requests. If the file does not parse to a composition, the temporary file will be deleted.
+   */
+  public void setAnimationFromUrl(String url, @Nullable String cacheKey) {
+    LottieTask<LottieComposition> task = LottieCompositionFactory.fromUrl(getContext(), url, cacheKey);
+    setCompositionTask(task);
+  }
+
+  /**
    * Set a default failure listener that will be called if any of the setAnimation APIs fail for any reason.
    * This can be used to replace the default behavior.
    *
@@ -489,11 +509,6 @@ import static com.airbnb.lottie.RenderMode.HARDWARE;
       return;
     }
 
-    // If you set a different composition on the view, the bounds will not update unless
-    // the drawable is different than the original.
-    setImageDrawable(null);
-    setImageDrawable(lottieDrawable);
-
     // This is needed to makes sure that the animation is properly played/paused for the current visibility state.
     // It is possible that the drawable had a lazy composition task to play the animation but this view subsequently
     // became invisible. Comment this out and run the espresso tests to see a failing test.
@@ -535,7 +550,7 @@ import static com.airbnb.lottie.RenderMode.HARDWARE;
       lottieDrawable.playAnimation();
       enableOrDisableHardwareLayer();
     } else {
-      wasAnimatingWhenNotShown = true;
+      playAnimationWhenShown = true;
     }
   }
 
@@ -549,6 +564,7 @@ import static com.airbnb.lottie.RenderMode.HARDWARE;
       lottieDrawable.resumeAnimation();
       enableOrDisableHardwareLayer();
     } else {
+      playAnimationWhenShown = false;
       wasAnimatingWhenNotShown = true;
     }
   }
@@ -887,7 +903,9 @@ import static com.airbnb.lottie.RenderMode.HARDWARE;
 
   @MainThread
   public void cancelAnimation() {
+    wasAnimatingWhenDetached = false;
     wasAnimatingWhenNotShown = false;
+    playAnimationWhenShown = false;
     lottieDrawable.cancelAnimation();
     enableOrDisableHardwareLayer();
   }
@@ -897,6 +915,7 @@ import static com.airbnb.lottie.RenderMode.HARDWARE;
     autoPlay = false;
     wasAnimatingWhenDetached = false;
     wasAnimatingWhenNotShown = false;
+    playAnimationWhenShown = false;
     lottieDrawable.pauseAnimation();
     enableOrDisableHardwareLayer();
   }

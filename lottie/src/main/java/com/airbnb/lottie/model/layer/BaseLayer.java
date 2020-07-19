@@ -81,6 +81,8 @@ public abstract class BaseLayer
   @Nullable
   private MaskKeyframeAnimation mask;
   @Nullable
+  private FloatKeyframeAnimation inOutAnimation;
+  @Nullable
   private BaseLayer matteLayer;
   /**
    * This should only be used by {@link #buildParentLayerListIfNeeded()}
@@ -145,8 +147,7 @@ public abstract class BaseLayer
 
   private void setupInOutAnimations() {
     if (!layerModel.getInOutKeyframes().isEmpty()) {
-      final FloatKeyframeAnimation inOutAnimation =
-          new FloatKeyframeAnimation(layerModel.getInOutKeyframes());
+      inOutAnimation = new FloatKeyframeAnimation(layerModel.getInOutKeyframes());
       inOutAnimation.setIsDiscrete();
       inOutAnimation.addUpdateListener(new BaseKeyframeAnimation.AnimationListener() {
         @Override
@@ -374,7 +375,7 @@ public abstract class BaseLayer
     if (Build.VERSION.SDK_INT < Build.VERSION_CODES.P) {
       // Pre-Pie, offscreen buffers were opaque which meant that outer border of a mask
       // might get drawn depending on the result of float rounding.
-      canvas.drawColor(Color.TRANSPARENT);
+      clearCanvas(canvas);
     }
     L.endSection("Layer#saveLayer");
     for (int i = 0; i < mask.getMasks().size(); i++) {
@@ -523,6 +524,10 @@ public abstract class BaseLayer
     }
     if (layerModel.getTimeStretch() != 0) {
       progress /= layerModel.getTimeStretch();
+    }
+    if (inOutAnimation != null) {
+      // Time stretch needs to be divided again for the inOutAnimation.
+      inOutAnimation.setProgress(progress / layerModel.getTimeStretch());
     }
     if (matteLayer != null) {
       // The matte layer's time stretch is pre-calculated.
