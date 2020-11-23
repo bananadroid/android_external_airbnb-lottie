@@ -16,13 +16,6 @@ import android.os.Build;
 import android.view.View;
 import android.widget.ImageView;
 
-import androidx.annotation.FloatRange;
-import androidx.annotation.IntDef;
-import androidx.annotation.IntRange;
-import androidx.annotation.MainThread;
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-
 import com.airbnb.lottie.manager.FontAssetManager;
 import com.airbnb.lottie.manager.ImageAssetManager;
 import com.airbnb.lottie.model.KeyPath;
@@ -44,6 +37,14 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+
+import androidx.annotation.FloatRange;
+import androidx.annotation.IntDef;
+import androidx.annotation.IntRange;
+import androidx.annotation.MainThread;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.annotation.RequiresApi;
 
 /**
  * This can be used to show an lottie animation in any place that would normally take a drawable.
@@ -94,6 +95,7 @@ public class LottieDrawable extends Drawable implements Drawable.Callback, Anima
   private CompositionLayer compositionLayer;
   private int alpha = 255;
   private boolean performanceTrackingEnabled;
+  private boolean outlineMasksAndMattes;
   private boolean isApplyingOpacityToLayersEnabled;
   private boolean isExtraScaleEnabled = true;
   /**
@@ -249,6 +251,22 @@ public class LottieDrawable extends Drawable implements Drawable.Callback, Anima
     }
   }
 
+  /**
+   * Enable this to debug slow animations by outlining masks and mattes. The performance overhead of the masks and mattes will
+   * be proportional to the surface area of all of the masks/mattes combined.
+   *
+   * DO NOT leave this enabled in production.
+   */
+  public void setOutlineMasksAndMattes(boolean outline) {
+    if (outlineMasksAndMattes == outline) {
+      return;
+    }
+    outlineMasksAndMattes = outline;
+    if (compositionLayer != null) {
+      compositionLayer.setOutlineMasksAndMattes(outline);
+    }
+  }
+
   @Nullable
   public PerformanceTracker getPerformanceTracker() {
     if (composition != null) {
@@ -296,6 +314,9 @@ public class LottieDrawable extends Drawable implements Drawable.Callback, Anima
   private void buildCompositionLayer() {
     compositionLayer = new CompositionLayer(
         this, LayerParser.parse(composition), composition.getLayers(), composition);
+    if (outlineMasksAndMattes) {
+      compositionLayer.setOutlineMasksAndMattes(true);
+    }
   }
 
   public void clearComposition() {
@@ -386,7 +407,11 @@ public class LottieDrawable extends Drawable implements Drawable.Callback, Anima
   @MainThread
   @Override
   public void start() {
-    playAnimation();
+    // Don't auto play when in edit mode.
+    Callback callback = getCallback();
+    if (callback instanceof View && !((View) callback).isInEditMode()) {
+      playAnimation();
+    }
   }
 
   @MainThread
@@ -720,6 +745,12 @@ public class LottieDrawable extends Drawable implements Drawable.Callback, Anima
   public void removeAllAnimatorListeners() {
     animator.removeAllListeners();
   }
+
+  @RequiresApi(api = Build.VERSION_CODES.KITKAT)
+  public void addAnimatorPauseListener(Animator.AnimatorPauseListener listener) { animator.addPauseListener(listener); }
+
+  @RequiresApi(api = Build.VERSION_CODES.KITKAT)
+  public void removeAnimatorPauseListener(Animator.AnimatorPauseListener listener) { animator.removePauseListener(listener); }
 
   /**
    * Sets the progress to the specified frame.

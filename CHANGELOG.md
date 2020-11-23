@@ -1,5 +1,32 @@
+# 3.5.0
+### Features and Improvements
+* Added a new global configuration to add a custom network stack, custom network cache, enable systrace markers, and more ([#1629](https://github.com/airbnb/lottie-android/pull/1629))
+
+  * To use it, checkout the docs for `Lottie.initialize` and `LottieConfig.Builder`.
+* Add support for parsing dotLottie files ([#1660](https://github.com/airbnb/lottie-android/pull/1660))
+* Added support for pause listeners on `LottieDrawable` and `LottieAnimationView` ([#1662](https://github.com/airbnb/lottie-android/pull/1662))
+### Bugs Fixed
+* Properly cache animations loaded via url in memory ([#1657](https://github.com/airbnb/lottie-android/pull/1657))
+
+# 3.4.4
+### Bugs Fixed
+* Properly clamp gradient values ([#1636](https://github.com/airbnb/lottie-android/pull/1636))
+* Fix some scaling issues with text ([#1635](https://github.com/airbnb/lottie-android/pull/1635))
+* Add a warning instead of crashing when parsing an unknown matte type ([#1638](https://github.com/airbnb/lottie-android/pull/1638))
+* Clear cached gradients when setting a new value callback ([#1639](https://github.com/airbnb/lottie-android/pull/1639))
+
+# 3.4.2
+### Feature and Improvements
+* Disable hardware acceleration by default on Android 7.x ([#1586](https://github.com/airbnb/lottie-android/pull/1586))
+* Enable Lottie animations to preview in Android Studio (they may not be accurate, though)
+([#1572](https://github.com/airbnb/lottie-android/pull/1572))
+* More leniently parse opacity and colors to render Telegram stickers better ([#1612](https://github.com/airbnb/lottie-android/pull/1612) and [#1613](https://github.com/airbnb/lottie-android/pull/1612))
+* Use the correct cacheKey when LottieAnimationView loads an rawRes animation ([#1617](https://github.com/airbnb/lottie-android/pull/1617))
+* Prevent animations from blinking if they are rendered on multiple threads ([#1575](https://github.com/airbnb/lottie-android/pull/1575))
+
+
 # 3.4.1
-#### Feature and Improvements
+### Feature and Improvements
 * Added a KeyPath.COMPOSITION constant to set dynamic properties on the animation's root composition layer ([#1559](https://github.com/airbnb/lottie-android/pull/1559)).
 * A default style can now be set for all AnimationViews with lottieAnimationViewStyle ([#1524](https://github.com/airbnb/lottie-android/pull/1524)).
 
